@@ -61,6 +61,7 @@ class TestMailTree(unittest.TestCase):
         mt = MailTree('abc@efg')
 
         mt.add_author('=?utf-8?b?xZrDtsacxJMgxYXEg23EkyA8bmFtZUBleGFtcGxlLmNvbT4=?=')
+        mt.add_author('=?utf-8?b?xZrDtsacxJMgxYXEg23EkyA8bmFtZUBleGFtcGxlLmNvbT4=?=')
 
         self.assertEqual(mt.authors, [u'ŚöƜē Ņămē <name@example.com>'])
 

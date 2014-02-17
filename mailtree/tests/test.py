@@ -7,7 +7,7 @@ import unittest
 
 from mock import Mock
 
-class TestMailTree(unittest.TestCase):
+class TestMailTreeNode(unittest.TestCase):
 
     def setUp(self):
         self.msg = Message()

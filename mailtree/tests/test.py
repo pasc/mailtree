@@ -1,4 +1,6 @@
-from mailtree import MailTreeNode
+# -*- coding: utf-8 -*-
+
+from mailtree import MailTreeNode, MailTree
 from mailtree import parse_message_ids
 
 from email.message import Message
@@ -38,6 +40,29 @@ class TestMailTreeNode(unittest.TestCase):
         self.assertEqual(mtn.subject, 'This is an example')
 
         tree.nodes['efg@example.com'].children.append.assert_called_once_with(mtn)
+
+
+class TestMailTree(unittest.TestCase):
+    def test_add_author(self):
+        mt = MailTree('abc@efg')
+        mt.add_author('My Name Is <name@example.com>')
+
+        self.assertEqual(mt.authors, ['My Name Is <name@example.com>'])
+
+    def test_add_multi_authors(self):
+        mt = MailTree('abc@efg')
+        mt.add_author('author1@example.com')
+        mt.add_author('author2@example.com')
+        mt.add_author('author1@example.com')
+
+        self.assertEqual(mt.authors, ['author1@example.com', 'author2@example.com'])
+
+    def test_add_encoded_author(self):
+        mt = MailTree('abc@efg')
+
+        mt.add_author('=?utf-8?b?xZrDtsacxJMgxYXEg23EkyA8bmFtZUBleGFtcGxlLmNvbT4=?=')
+
+        self.assertEqual(mt.authors, [u'ŚöƜē Ņămē <name@example.com>'])
 
 class TestMessageIDParser(unittest.TestCase):
     def test_simple(self):

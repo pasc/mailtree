@@ -93,3 +93,9 @@ class TestMessageIDParser(unittest.TestCase):
         self.assertTrue(isinstance(ret, list))
         self.assertEqual(ret, ['abc@efg', 'efg@efg'])
 
+    def test_blank(self):
+        ids = ""
+        ret = parse_message_ids(ids)
+
+        self.assertTrue(isinstance(ret, list))
+        self.assertEqual(ret, [])

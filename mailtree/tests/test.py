@@ -127,6 +127,23 @@ class TestMailTree(unittest.TestCase):
 
         self.assertEqual(mt.parent.author, 'ERASED')
 
+    def test_add_child(self):
+        mt = MailTree('abcd1@example.com')
+        mt.addChild(self.msgB)
+
+        self.assertEqual(len(mt.nodes), 2)
+        self.assertEqual(mt.nodes['abcd1@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(mt.nodes['abcd2@example.com'].message_id, 'abcd2@example.com')
+
+        self.assertEqual(len(mt.nodes['abcd1@example.com'].children), 1)
+        self.assertEqual(mt.nodes['abcd1@example.com'].children[0].message_id, 'abcd2@example.com')
+
+        self.assertEqual(mt.nodes['abcd2@example.com'].children, [])
+
+        self.assertEqual(mt.nodes['abcd2@example.com'].author, 'From test <from2@example.com>')
+
+        self.assertEqual(mt.authors, ['From test <from2@example.com>'])
+
 class TestMessageIDParser(unittest.TestCase):
     def test_simple(self):
         ids = "<abc@efg>"

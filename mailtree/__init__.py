@@ -31,12 +31,15 @@ class MailTree:
         self.message_id = message_id
 
     def hydrate(self, message, references=None):
-        if self.parent.isEmpty:
-            self.parent.hydrate(message, self)
+        if references is None:
+            references = parse_message_ids(message.get('References', ""))
 
-        for ref in references or []:
+        for ref in references:
             if ref not in self.nodes:
                 self.nodes[ref] = MailTreeNode(ref)
+
+        if self.parent.isEmpty:
+            self.parent.hydrate(message, self)
 
         self.add_author(message.get('From'))
 

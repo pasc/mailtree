@@ -173,6 +173,7 @@ class TestMailForest(unittest.TestCase):
         self.msgC['From'] = 'From test <from3@example.com>'
         self.msgC['Message-Id'] = '<abcd3@example.com>'
         self.msgC['Subject'] = 'Re: This is an example'
+        self.msgC['In-Reply-To'] = '<abcd1@example.com>'
 
     def test_fill_tree_single(self):
         mf = MailForest()
@@ -233,6 +234,19 @@ class TestMailForest(unittest.TestCase):
         self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].children[0].message_id, "abcd2@example.com")
         self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd1@example.com'].children), 1)
         self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd2@example.com'].children), 0)
+
+    def test_single_message_no_ref_but_reply(self):
+        mf = MailForest()
+        mf.fill_tree([self.msgC])
+
+        self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(mf['abcd3@example.com'].message_id, 'abcd1@example.com')
+
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd3@example.com'].author, "From test <from3@example.com>")
+
+        self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd1@example.com'].children), 1)
+        self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd3@example.com'].children), 0)
+
 
 class TestMessageIDParser(unittest.TestCase):
     def test_simple(self):

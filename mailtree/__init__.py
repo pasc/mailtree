@@ -103,10 +103,10 @@ class MailForest(dict):
             msg_id = m.get('Message-id')
             msg_id = parse_message_ids(msg_id)[0]
 
-            # This doesn't consider the case where we have In-Reply-To but not References
-            if m.get("References"):
-                references = m.get('References')
-                references = parse_message_ids(references)
+            references = parse_message_ids(m.get('References', ''))
+            references.extend(parse_message_ids(m.get('In-Reply-To', '')))
+
+            if len(references) > 0:
                 if references[0] not in self:
                     self[references[0]] = MailTree(references[0])
 

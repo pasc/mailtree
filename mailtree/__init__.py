@@ -29,6 +29,8 @@ class MailTree:
         self.nodes = {message_id: self.parent}
         self.authors = []
         self.message_id = message_id
+        if message:
+            self.hydrate(message)
 
     def hydrate(self, message, references=None):
         if references is None:

@@ -103,6 +103,13 @@ class TestMailTree(unittest.TestCase):
         self.assertEqual(mt.nodes['abcd1@example.com'].message_id, 'abcd1@example.com')
         self.assertEqual(len(mt.nodes), 1)
 
+    def test_init_hydrate(self):
+        mt = MailTree('abcd1@example.com', self.msgA)
+
+        self.assertEqual(mt.parent.author, 'From test <from1@example.com>')
+        self.assertEqual(mt.nodes['abcd1@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(len(mt.nodes), 1)
+
     def test_hydrate_reply(self):
         mt = MailTree('abcd2@example.com')
         mt.hydrate(self.msgB)

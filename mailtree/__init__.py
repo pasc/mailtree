@@ -43,6 +43,10 @@ class MailTree:
         if self.parent.isEmpty:
             self.parent.hydrate(message, self)
 
+        mid = parse_message_ids(message.get('Message-Id'))
+        if len(mid) > 0:
+            self.message_id = mid[0]
+
         self.add_author(message.get('From'))
 
     def add_author(self, author):
@@ -50,6 +54,23 @@ class MailTree:
         formatted = ''.join([ unicode(t[0], t[1] or 'ASCII') for t in dh ])
         if formatted not in self.authors:
             self.authors.append(formatted)
+
+    def graft(self, other):
+        for author in other.authors:
+            if author not in self.authors:
+                self.authors.append(author)
+
+        for node in other.nodes:
+            if node not in self.nodes:
+                self.nodes[node] = other.nodes[node]
+            elif not other.nodes[node].isEmpty:
+                self.nodes[node] = other.nodes[node]
+
+            for child in other.nodes[node].children:
+                if child not in self.nodes[node].children:
+                    self.nodes[node].children.append(child)
+
+        other.message_id = self.message_id
 
     def addChild(self, message, references=None):
         self.add_author(message.get('From'))
@@ -113,13 +134,14 @@ class MailForest(dict):
                 tree_key = self[references[0]].message_id
                 for ref in references:
                     if ref not in self:
-                        self[ref] = MailTree(tree_key)
+                        self[ref] = self[references[0]]
 
                 if msg_id not in self:
-                    self[msg_id] = MailTree(tree_key)
+                    self[msg_id] = self[references[0]]
                     self[tree_key].addChild(m, references)
                 elif msg_id == self[msg_id].message_id:
                     self[msg_id].hydrate(m, references)
+                    self[tree_key].graft(self[msg_id])
                 else:
                     self[tree_key].addChild(m, references)
 

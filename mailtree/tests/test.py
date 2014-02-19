@@ -183,6 +183,14 @@ class TestMailForest(unittest.TestCase):
         self.msgD['In-Reply-To'] = '<abcd2@example.com>'
         self.msgD['References'] = '<abcd1@example.com> <abcd2@example.com>'
 
+        self.msgE = Message()
+        self.msgE.set_payload("my payloadE")
+        self.msgE['From'] = 'From test <from5@example.com>'
+        self.msgE['Message-Id'] = '<abcd5@example.com>'
+        self.msgE['Subject'] = 'Re: This is an example'
+        self.msgE['In-Reply-To'] = '<abcd2@example.com>'
+        self.msgE['References'] = '<abcd2@example.com>'
+
     def test_fill_tree_single(self):
         mf = MailForest()
         mf.fill_tree([self.msgA])
@@ -203,7 +211,7 @@ class TestMailForest(unittest.TestCase):
         self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
         self.assertEqual(mf['abcd2@example.com'].message_id, 'abcd1@example.com')
 
-        self.assertEqual(len(mf['abcd2@example.com'].nodes), 1)
+        self.assertEqual(len(mf['abcd2@example.com'].nodes), 2)
         self.assertEqual(len(mf['abcd1@example.com'].nodes), 2)
 
         self.assertEqual(mf['abcd1@example.com'].nodes['abcd2@example.com'].author, "From test <from2@example.com>")
@@ -219,7 +227,7 @@ class TestMailForest(unittest.TestCase):
         self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
         self.assertEqual(mf['abcd2@example.com'].message_id, 'abcd1@example.com')
 
-        self.assertEqual(len(mf['abcd2@example.com'].nodes), 1)
+        self.assertEqual(len(mf['abcd2@example.com'].nodes), 2)
         self.assertEqual(len(mf['abcd1@example.com'].nodes), 2)
 
         self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].author, "From test <from1@example.com>")
@@ -287,6 +295,40 @@ class TestMailForest(unittest.TestCase):
         self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].children[0].message_id, "abcd2@example.com")
         self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd1@example.com'].children), 1)
         self.assertEqual(mf['abcd1@example.com'].nodes['abcd2@example.com'].children[0].message_id, "abcd4@example.com")
+        self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd2@example.com'].children), 1)
+
+    def test_simple_dangling_chain(self):
+        mf = MailForest()
+        mf.fill_tree([self.msgA, self.msgB, self.msgE])
+
+        self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(mf['abcd2@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(mf['abcd5@example.com'].message_id, 'abcd1@example.com')
+
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].author, "From test <from1@example.com>")
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd2@example.com'].author, "From test <from2@example.com>")
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd5@example.com'].author, "From test <from5@example.com>")
+
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].children[0].message_id, "abcd2@example.com")
+        self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd1@example.com'].children), 1)
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd2@example.com'].children[0].message_id, "abcd5@example.com")
+        self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd2@example.com'].children), 1)
+
+    def test_reversed_dangling_chain(self):
+        mf = MailForest()
+        mf.fill_tree([self.msgE, self.msgB, self.msgA])
+
+        self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(mf['abcd2@example.com'].message_id, 'abcd1@example.com')
+        self.assertEqual(mf['abcd5@example.com'].message_id, 'abcd1@example.com')
+
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].author, "From test <from1@example.com>")
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd2@example.com'].author, "From test <from2@example.com>")
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd5@example.com'].author, "From test <from5@example.com>")
+
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd1@example.com'].children[0].message_id, "abcd2@example.com")
+        self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd1@example.com'].children), 1)
+        self.assertEqual(mf['abcd1@example.com'].nodes['abcd2@example.com'].children[0].message_id, "abcd5@example.com")
         self.assertEqual(len(mf['abcd1@example.com'].nodes['abcd2@example.com'].children), 1)
 
 

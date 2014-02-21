@@ -18,6 +18,12 @@ class TestMailTreeNode(unittest.TestCase):
         self.msg['Message-Id'] = '<abcd@example.com>'
         self.msg['Subject'] = 'This is an example'
 
+        self.msgU = Message()
+        self.msgU.set_payload("my payload")
+        self.msgU['From'] = '=?utf-8?b?xZrDtsacxJMgxYXEg23EkyA8bmFtZUBleGFtcGxlLmNvbT4=?='
+        self.msgU['Message-Id'] = '<abcd@example.com>'
+        self.msgU['Subject'] = 'This is an example'
+
     def test_mail_tree_node(self):
         mtn = MailTreeNode('abcde')
 
@@ -40,6 +46,13 @@ class TestMailTreeNode(unittest.TestCase):
         self.assertEqual(mtn.subject, 'This is an example')
 
         tree.nodes['efg@example.com'].children.append.assert_called_once_with(mtn)
+
+    def test_mail_with_unicode(self):
+        mtn = MailTreeNode('abcde')
+
+        tree = Mock()
+        mtn.hydrate(self.msgU, tree)
+        self.assertEqual(mtn.author, u'ŚöƜē Ņămē <name@example.com>')
 
 
 class TestMailTree(unittest.TestCase):

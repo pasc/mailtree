@@ -10,8 +10,8 @@ class MailTreeNode:
         self.message_id = message_id
 
     def hydrate(self, message, tree):
-        self.author = message.get('From')
-        self.subject = message.get('Subject')
+        self.author = get_header(message.get('From', ''))
+        self.subject = get_header(message.get('Subject'))
         if message.get('In-reply-to'):
             in_reply_to = parse_message_ids(message.get('In-Reply-To'))
             if len(in_reply_to):
@@ -50,8 +50,7 @@ class MailTree:
         self.add_author(message.get('From'))
 
     def add_author(self, author):
-        dh = decode_header(author)
-        formatted = ''.join([ unicode(t[0], t[1] or 'ASCII') for t in dh ])
+        formatted = get_header(author)
         if formatted not in self.authors:
             self.authors.append(formatted)
 
@@ -151,6 +150,9 @@ class MailForest(dict):
                 else:
                     self[msg_id] = MailTree(msg_id, m)
 
+def get_header(header):
+    dh = decode_header(header)
+    return ''.join([ unicode(t[0], t[1] or 'ASCII') for t in dh ])
 
 def parse_message_ids(references):
     """

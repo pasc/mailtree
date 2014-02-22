@@ -110,6 +110,10 @@ class MailTree:
 
 
 class MailForest(dict):
+    def __init__(self):
+        self.trees = {}
+        self.keys = {}
+
     def pruned_trees(self):
         trees = {}
         for k in self.keys():
@@ -117,6 +121,22 @@ class MailForest(dict):
                 trees[k] = self[k]
 
         return trees
+
+    def parent_key(self, key):
+        while key != self.keys[key]:
+            key = self.keys[key]
+
+        return key
+
+    def __getitem__(self, key):
+        if key not in self.keys:
+            raise IndexError
+        key = self.parent_key(key)
+
+        return self.trees[key]
+
+    def __len__(self):
+        return len(self.trees)
 
     def fill_tree(self, box):
         for m in box:
@@ -127,28 +147,34 @@ class MailForest(dict):
             references.extend(parse_message_ids(m.get('In-Reply-To', '')))
 
             if len(references) > 0:
-                if references[0] not in self:
-                    self[references[0]] = MailTree(references[0])
+                tree_key = references[0]
+                if tree_key in self.keys:
+                    tree_key = self.parent_key(tree_key)
 
-                tree_key = self[references[0]].message_id
+                if tree_key not in self.trees:
+                    self.trees[tree_key] = MailTree(tree_key)
+
                 for ref in references:
-                    if ref not in self:
-                        self[ref] = self[references[0]]
+                    if ref not in self.keys:
+                        self.keys[ref] = tree_key
 
-                if msg_id not in self:
-                    self[msg_id] = self[references[0]]
-                    self[tree_key].addChild(m, references)
-                elif msg_id == self[msg_id].message_id:
-                    self[msg_id].hydrate(m, references)
-                    self[tree_key].graft(self[msg_id])
+                if msg_id not in self.keys:
+                    self.keys[msg_id] = tree_key
+                    self.trees[tree_key].addChild(m, references)
+                elif msg_id in self.trees:
+                    self.trees[msg_id].hydrate(m, references)
+                    self.trees[tree_key].graft(self.trees[msg_id])
+                    del self.trees[msg_id]
+                    self.keys[msg_id] = tree_key
                 else:
-                    self[tree_key].addChild(m, references)
+                    self.trees[tree_key].addChild(m, references)
 
             else:
-                if msg_id in self:
-                    self[msg_id].hydrate(m)
+                self.keys[msg_id] = msg_id
+                if msg_id in self.trees:
+                    self.trees[msg_id].hydrate(m)
                 else:
-                    self[msg_id] = MailTree(msg_id, m)
+                    self.trees[msg_id] = MailTree(msg_id, m)
 
 def get_header(header):
     dh = decode_header(header)

@@ -219,7 +219,7 @@ class TestMailForest(unittest.TestCase):
 
         self.assertTrue(isinstance(mf['abcd1@example.com'], MailTree))
         self.assertTrue(isinstance(mf['abcd2@example.com'], MailTree))
-        self.assertEqual(len(mf), 2)
+        self.assertEqual(len(mf), 1)
 
         self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
         self.assertEqual(mf['abcd2@example.com'].message_id, 'abcd1@example.com')
@@ -235,7 +235,7 @@ class TestMailForest(unittest.TestCase):
 
         self.assertTrue(isinstance(mf['abcd1@example.com'], MailTree))
         self.assertTrue(isinstance(mf['abcd2@example.com'], MailTree))
-        self.assertEqual(len(mf), 2)
+        self.assertEqual(len(mf), 1)
 
         self.assertEqual(mf['abcd1@example.com'].message_id, 'abcd1@example.com')
         self.assertEqual(mf['abcd2@example.com'].message_id, 'abcd1@example.com')

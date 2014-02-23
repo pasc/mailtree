@@ -8,6 +8,8 @@ class MailTreeNode:
         self.isEmpty = True
         self.children = []
         self.message_id = message_id
+        self.author = ''
+        self.subject = ''
 
     def hydrate(self, message, tree):
         self.author = get_header(message.get('From', ''))
